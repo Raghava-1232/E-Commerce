@@ -1,0 +1,66 @@
+{% extends 'store/index.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box-element">
+            <h3>My Orders</h3>
+            <hr>
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-box mb-4">
+                    <div class="order-header">
+                        <h5>Order #{{ order.transaction_id|slice:":8" }}</h5>
+                        <p class="text-muted">Date: {{ order.date_ordered|date:"M d, Y" }}</p>
+                        <p class="text-muted">Total: ${{ order.get_cart_total|floatformat:2 }}</p>
+                        <p class="text-muted">Items: {{ order.get_cart_items }}</p>
+                        <p class="{% if order.complete %}text-success{% else %}text-warning{% endif %}">
+                            Status: {% if order.complete %}Completed{% else %}Pending{% endif %}
+                        </p>
+                    </div>
+                    <div class="order-items">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.orderitem_set.all %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img class="row-image mr-2" src="{{ item.product.imageURL }}">
+                                            {{ item.product.name }}
+                                        </div>
+                                    </td>
+                                    <td>${{ item.product.price|floatformat:2 }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.get_total|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if order.shipping %}
+                    <div class="shipping-info">
+                        <p><strong>Shipping Address:</strong></p>
+                        {% for shipping in order.shippingaddress_set.all %}
+                        <p>{{ shipping.address }}, {{ shipping.city }}, {{ shipping.state }} {{ shipping.zipcode }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <hr>
+                {% endfor %}
+            {% else %}
+                <p>No orders found.</p>
+                <a href="{% url 'store' %}" class="btn btn-primary">Start Shopping</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %} 

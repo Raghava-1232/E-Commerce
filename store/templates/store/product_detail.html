@@ -1,0 +1,26 @@
+{% extends 'store/index.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="box-element">
+            <a class="btn btn-outline-dark" href="{% url 'store' %}">&#x2190; Back to Store</a>
+            <hr>
+            <img class="product-detail-image" src="{{product.imageURL}}" style="width:100%">
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="box-element">
+            <h3><strong>{{product.name}}</strong></h3>
+            <hr>
+            <h4 class="price">₹{{product.price|floatformat:2}}</h4>
+            <hr>
+            <p class="product-description">{{product.description}}</p>
+            <div class="product-stock">
+                <p>Stock Available: {{product.stock}}</p>
+            </div>
+            <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+        </div>
+    </div>
+</div>
+{% endblock content %} 

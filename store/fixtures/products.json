@@ -1,0 +1,146 @@
+[
+    {
+        "model": "store.category",
+        "pk": 1,
+        "fields": {
+            "name": "Electronics",
+            "slug": "electronics",
+            "description": "Electronic items and gadgets"
+        }
+    },
+    {
+        "model": "store.category",
+        "pk": 2,
+        "fields": {
+            "name": "Clothing",
+            "slug": "clothing",
+            "description": "Fashion and apparel"
+        }
+    },
+    {
+        "model": "store.category",
+        "pk": 3,
+        "fields": {
+            "name": "Books",
+            "slug": "books",
+            "description": "Books and literature"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 1,
+        "fields": {
+            "name": "Wireless Headphones",
+            "category": 1,
+            "price": "99.99",
+            "digital": true,
+            "description": "High-quality wireless headphones with noise cancellation",
+            "stock": 10,
+            "image": "headphones.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 2,
+        "fields": {
+            "name": "Smart Watch",
+            "category": 1,
+            "price": "199.99",
+            "digital": false,
+            "description": "Smart watch with fitness tracking and notifications",
+            "stock": 15,
+            "image": "watch.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 3,
+        "fields": {
+            "name": "Laptop",
+            "category": 1,
+            "price": "999.99",
+            "digital": true,
+            "description": "Powerful laptop for work and gaming",
+            "stock": 5,
+            "image": "laptop.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 4,
+        "fields": {
+            "name": "Denim Jeans",
+            "category": 2,
+            "price": "49.99",
+            "digital": false,
+            "description": "Classic blue denim jeans",
+            "stock": 20,
+            "image": "jeans.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 5,
+        "fields": {
+            "name": "T-Shirt",
+            "category": 2,
+            "price": "24.99",
+            "digital": false,
+            "description": "Cotton crew neck t-shirt",
+            "stock": 30,
+            "image": "tshirt.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 6,
+        "fields": {
+            "name": "Sneakers",
+            "category": 2,
+            "price": "79.99",
+            "digital": false,
+            "description": "Comfortable athletic sneakers",
+            "stock": 12,
+            "image": "sneakers.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 7,
+        "fields": {
+            "name": "Python Programming",
+            "category": 3,
+            "price": "39.99",
+            "digital": true,
+            "description": "Learn Python programming from scratch",
+            "stock": 25,
+            "image": "python_book.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 8,
+        "fields": {
+            "name": "Novel Collection",
+            "category": 3,
+            "price": "89.99",
+            "digital": false,
+            "description": "Collection of bestselling novels",
+            "stock": 8,
+            "image": "novels.jpg"
+        }
+    },
+    {
+        "model": "store.product",
+        "pk": 9,
+        "fields": {
+            "name": "Cookbook",
+            "category": 3,
+            "price": "29.99",
+            "digital": false,
+            "description": "Recipes from around the world",
+            "stock": 15,
+            "image": "cookbook.jpg"
+        }
+    }
+] 
