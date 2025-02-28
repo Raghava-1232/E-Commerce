@@ -2,25 +2,59 @@
 {% load static %}
 {% block content %}
     <div class="row">
-        {% if products %}
-            {% for product in products %}
-            <div class="col-lg-4">
-                <img class="thumbnail" src="{{product.imageURL}}">
-                <div class="box-element product">
-                    <h6><strong>{{product.name}}</strong></h6>
-                    <hr>
-                    <div class="btn-container">
-                        <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
-                        <a class="btn btn-outline-success" href="{% url 'product_view' product.id %}">View</a>
-                    </div>
-                    <div class="price-tag">₹{{product.price|floatformat:2}}</div>
+        <!-- Category Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Categories</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'store' %}" class="list-group-item {% if not current_category %}active{% endif %}">
+                        All Products
+                    </a>
+                    {% for category in categories %}
+                    <a href="{% url 'store' %}?category={{ category.slug }}" 
+                       class="list-group-item {% if current_category == category.slug %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12 text-center">
-                <h3>No products available</h3>
+        </div>
+        
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <div class="row">
+                {% if products %}
+                    {% for product in products %}
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <img class="card-img-top thumbnail" src="{{product.imageURL}}" alt="{{product.name}}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{product.name}}</h5>
+                                {% if product.category %}
+                                <p class="card-text"><small class="text-muted">{{product.category.name}}</small></p>
+                                {% endif %}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        <button data-product="{{product.id}}" data-action="add" 
+                                                class="btn btn-sm btn-outline-secondary add-btn update-cart">
+                                            Add to Cart
+                                        </button>
+                                        <a class="btn btn-sm btn-outline-success" href="{% url 'product_view' product.id %}">View</a>
+                                    </div>
+                                    <h6 class="price-tag mb-0">₹{{product.price|floatformat:2}}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center">
+                        <h3>No products available</h3>
+                    </div>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
     </div>
 {% endblock content %}

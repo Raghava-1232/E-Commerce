@@ -31,6 +31,10 @@
                     {% endif %}
                 </ul>
                 <div class="form-inline my-2 my-lg-0">
+                    <form class="form-inline mr-3" action="{% url 'search_products' %}" method="GET">
+                        <input class="form-control mr-sm-2" type="search" name="q" placeholder="Search products..." aria-label="Search" value="{{ search_query|default:'' }}">
+                        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+                    </form>
                     {% if user.is_authenticated %}
                         <a href="{% url 'logout' %}" class="btn btn-warning">Logout</a>
                     {% else %}

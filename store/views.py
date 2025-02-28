@@ -10,6 +10,11 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+import razorpay
+from django.conf import settings
+
+# Initialize Razorpay client
+razorpay_client = razorpay.Client(auth=("rzp_test_nNLNHVyfk8mWKP", "5bvamFpDrVDXPCoq4Ua39p60"))
 
 # Create your views here.
 def get_cart_total(request):
@@ -33,8 +38,20 @@ def store(request):
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
         cartItems = order['get_cart_items']
 
-    products = Product.objects.all()
-    context = {'products':products, 'cartItems':cartItems}
+    category_slug = request.GET.get('category')
+    categories = Category.objects.all()
+    
+    if category_slug:
+        products = Product.objects.filter(category__slug=category_slug)
+    else:
+        products = Product.objects.all()
+        
+    context = {
+        'products': products,
+        'cartItems': cartItems,
+        'categories': categories,
+        'current_category': category_slug
+    }
     return render(request, 'store/store.html', context)
 
 def cart(request):
@@ -63,7 +80,48 @@ def checkout(request):
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
         cartItems = order['get_cart_items']
 
-    context = {'items':items, 'order':order, 'cartItems':cartItems}
+    # Create Razorpay Order
+    if request.user.is_authenticated and items:
+        amount = int(order.get_cart_total * 100)  # Convert to paise
+        currency = 'INR'
+        
+        try:
+            # Create Razorpay Order
+            razorpay_order = razorpay_client.order.create({
+                'amount': amount,
+                'currency': currency,
+                'payment_capture': '1'
+            })
+            
+            # Save the Razorpay order ID
+            order.transaction_id = razorpay_order['id']
+            order.save()
+            
+            context = {
+                'items': items,
+                'order': order,
+                'cartItems': cartItems,
+                'razorpay_order_id': razorpay_order['id'],
+                'razorpay_merchant_key': "rzp_test_nNLNHVyfk8mWKP",
+                'razorpay_amount': amount,
+                'currency': currency,
+                'callback_url': 'payment_callback'
+            }
+        except Exception as e:
+            print(f"Razorpay Error: {str(e)}")
+            context = {
+                'items': items,
+                'order': order,
+                'cartItems': cartItems,
+                'error': 'Unable to create payment order. Please try again.'
+            }
+    else:
+        context = {
+            'items': items,
+            'order': order,
+            'cartItems': cartItems
+        }
+        
     return render(request, 'store/checkout.html', context)
 
 def loginPage(request):
@@ -207,3 +265,61 @@ def product_view(request, product_id):
         'cartItems': cartItems
     }
     return render(request, 'store/product_detail.html', context)
+
+def search_products(request):
+    query = request.GET.get('q', '')
+    category_slug = request.GET.get('category')
+    
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        cartItems = order.get_cart_items
+    else:
+        cartItems = 0
+    
+    categories = Category.objects.all()
+    products = Product.objects.all()
+    
+    if query:
+        products = products.filter(name__icontains=query) | products.filter(description__icontains=query)
+    
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+    
+    context = {
+        'products': products,
+        'cartItems': cartItems,
+        'search_query': query,
+        'categories': categories,
+        'current_category': category_slug
+    }
+    return render(request, 'store/store.html', context)
+
+@csrf_exempt
+def payment_callback(request):
+    if request.method == "POST":
+        try:
+            payment_id = request.POST.get('razorpay_payment_id', '')
+            order_id = request.POST.get('razorpay_order_id', '')
+            signature = request.POST.get('razorpay_signature', '')
+            params_dict = {
+                'razorpay_payment_id': payment_id,
+                'razorpay_order_id': order_id,
+                'razorpay_signature': signature
+            }
+            
+            # Verify the payment signature
+            try:
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                
+                # Get the order
+                order = Order.objects.get(transaction_id=order_id)
+                order.complete = True
+                order.save()
+                
+                return JsonResponse({'status': 'Payment successful'})
+            except:
+                return JsonResponse({'status': 'Payment verification failed'}, status=400)
+        except:
+            return JsonResponse({'status': 'Payment failed'}, status=400)
+    return JsonResponse({'status': 'Invalid request'}, status=400)

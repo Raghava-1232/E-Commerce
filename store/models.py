@@ -79,7 +79,7 @@ class Order(models.Model):
 	customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
 	date_ordered = models.DateTimeField(auto_now_add=True)
 	complete = models.BooleanField(default=False)
-	transaction_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+	transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 	
 	class Meta:
