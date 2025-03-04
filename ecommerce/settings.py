@@ -26,8 +26,7 @@ SECRET_KEY = 'django-insecure-y8g9^yjram#!+xg%y&%dvnd43oeg6_yacg!ap%#a!m)y+*3-e+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["my-django-app-kzdk.onrender.com", "0.0.0.0", "localhost"]
-
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -78,14 +77,11 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bv90ypv5wqo82sndsgy5',
-        'USER': 'ugvzz2w0hwr9rh0i',
-        'PASSWORD': 'diM1ixLArNsxTVbGG4AO',
-        'HOST': 'bv90ypv5wqo82sndsgy5-mysql.services.clever-cloud.com',
-        'PORT': 3306,
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+        'NAME': 'ecommerce',
+        'USER': 'root',
+        'PASSWORD': 'Raghava@1232',
+        'HOST': '127.0.0.1',
+        'PORT': 3306
     }
 }
 
@@ -137,3 +133,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'sriraghava1969@gmail.com'  # Replace with your Gmail address
+EMAIL_HOST_PASSWORD = 'wddperoqtayjhgki'  # Replace with the 16-character app password
+DEFAULT_FROM_EMAIL = 'sriraghava1969@gmail.com'  # Replace with your Gmail address

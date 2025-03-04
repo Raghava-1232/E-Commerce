@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -12,6 +12,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 import razorpay
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import threading
 
 # Initialize Razorpay client
 razorpay_client = razorpay.Client(auth=("rzp_test_nNLNHVyfk8mWKP", "5bvamFpDrVDXPCoq4Ua39p60"))
@@ -69,6 +72,7 @@ def cart(request):
     context = {'items':items, 'order':order, 'cartItems':cartItems}
     return render(request, 'store/cart.html', context)
 
+@login_required(login_url='login')
 def checkout(request):
     if request.user.is_authenticated:
         customer = request.user.customer
@@ -218,20 +222,29 @@ def process_order(request):
 
         if total == float(order.get_cart_total):
             order.complete = True
-        order.transaction_id = transaction_id
-        order.save()
+            order.status = 'processing'  # Set initial status
+            order.transaction_id = transaction_id
+            order.save()
 
-        if order.shipping:
-            ShippingAddress.objects.create(
-                customer=customer,
-                order=order,
-                address=data['shipping']['address'],
-                city=data['shipping']['city'],
-                state=data['shipping']['state'],
-                zipcode=data['shipping']['zipcode'],
-            )
-    else:
-        print('User is not logged in..')
+            # Create shipping address if shipping is required
+            if order.shipping:
+                ShippingAddress.objects.create(
+                    customer=customer,
+                    order=order,
+                    address=data['shipping']['address'],
+                    city=data['shipping']['city'],
+                    state=data['shipping']['state'],
+                    zipcode=data['shipping']['zipcode'],
+                )
+
+            # Simulate order processing
+            def update_order_status():
+                order.status = 'shipped'
+                order.delivery_date = timezone.now() + timedelta(hours=24)
+                order.save()
+            
+            timer = threading.Timer(3600, update_order_status)
+            timer.start()
 
     return JsonResponse('Payment submitted..', safe=False)
 
@@ -323,3 +336,24 @@ def payment_callback(request):
         except:
             return JsonResponse({'status': 'Payment failed'}, status=400)
     return JsonResponse({'status': 'Invalid request'}, status=400)
+
+@login_required(login_url='login')
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, customer=request.user.customer)
+    
+    # Only allow cancellation of pending orders
+    if order.status == 'pending':
+        order.status = 'cancelled'
+        order.save()
+        
+        # Restore product stock
+        for item in order.orderitem_set.all():
+            product = item.product
+            product.stock += item.quantity
+            product.save()
+            
+        messages.success(request, 'Order cancelled successfully.')
+    else:
+        messages.error(request, 'This order cannot be cancelled.')
+    
+    return redirect('orders')

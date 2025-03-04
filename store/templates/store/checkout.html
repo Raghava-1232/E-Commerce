@@ -13,10 +13,10 @@
             <form id="shipping-form">
                 <div id="user-info">
                     <div class="form-field mb-3">
-                        <input required class="form-control" type="text" name="name" placeholder="Name..">
+                        <input required class="form-control" type="text" name="name" value="{{ user.get_full_name|default:user.username }}" readonly>
                     </div>
                     <div class="form-field mb-3">
-                        <input required class="form-control" type="email" name="email" placeholder="Email..">
+                        <input required class="form-control" type="email" name="email" value="{{ user.email }}" readonly>
                     </div>
                 </div>
                 
@@ -77,7 +77,7 @@ document.getElementById('rzp-button').onclick = function(e){
         "key": "{{ razorpay_merchant_key }}", 
         "amount": "{{ razorpay_amount }}", 
         "currency": "{{ currency }}",
-        "name": "Ecom Store",
+        "name": "ShopSmart",
         "description": "Order #{{ order.transaction_id }}",
         "order_id": "{{ razorpay_order_id }}", 
         "handler": function (response){
@@ -108,8 +108,8 @@ document.getElementById('rzp-button').onclick = function(e){
             });
         },
         "prefill": {
-            "name": "",
-            "email": "",
+            "name": "{{ user.get_full_name|default:user.username }}",
+            "email": "{{ user.email }}",
             "contact": ""
         },
         "theme": {
@@ -134,17 +134,6 @@ document.getElementById('shipping-form').onsubmit = function(e) {
     // Show payment button
     document.getElementById('payment-button').style.display = 'block';
     document.getElementById('form-button').value = 'Update Information';
-    
-    // Update Razorpay prefill data
-    var name = document.querySelector('input[name="name"]').value;
-    var email = document.querySelector('input[name="email"]').value;
-    
-    if (window.rzp1) {
-        window.rzp1.prefill = {
-            name: name,
-            email: email
-        };
-    }
 };
 </script>
 {% endif %}

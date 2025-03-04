@@ -28,4 +28,5 @@ urlpatterns = [
     path('product/<int:product_id>/', views.product_view, name='product_view'),
     path('search/', views.search_products, name='search_products'),
     path('payment_callback/', views.payment_callback, name='payment_callback'),
+    path('order/<int:order_id>/cancel/', views.cancel_order, name='cancel_order'),
 ]
