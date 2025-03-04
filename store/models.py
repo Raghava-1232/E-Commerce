@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, EmailValidator
 from django.utils.text import slugify
 from django.utils import timezone
+from datetime import timedelta
 import uuid
 
 class Customer(models.Model):
@@ -81,6 +82,7 @@ class Order(models.Model):
 	complete = models.BooleanField(default=False)
 	transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+	delivery_date = models.DateTimeField(null=True, blank=True)
 	
 	class Meta:
 		ordering = ['-date_ordered']
@@ -90,6 +92,36 @@ class Order(models.Model):
 	def __str__(self):
 		return str(self.transaction_id)
 	
+	@property
+	def get_status_display(self):
+		if self.status == 'cancelled':
+			return 'Order Cancelled'
+		elif self.status == 'delivered':
+			return 'Order Delivered'
+		elif self.status == 'shipped':
+			return 'Order Shipped'
+		elif self.status == 'processing':
+			return 'Processing Order'
+		else:
+			return 'Order Pending'
+
+	@property
+	def delivery_status(self):
+		if self.status == 'cancelled':
+			return 'Order Cancelled'
+		elif self.status == 'delivered':
+			return 'Order Delivered'
+		elif self.status == 'shipped':
+			if self.delivery_date and timezone.now() >= self.delivery_date:
+				self.status = 'delivered'
+				self.save()
+				return 'Order Delivered'
+			return 'Your order will be delivered in 24 hours'
+		elif self.status == 'processing':
+			return 'Processing your order'
+		else:
+			return 'Order Pending'
+
 	@property
 	def shipping(self):
 		shipping = False
@@ -110,6 +142,11 @@ class Order(models.Model):
 		orderitems = self.orderitem_set.all()
 		total = sum([item.quantity for item in orderitems])
 		return total
+
+	def save(self, *args, **kwargs):
+		if self.status == 'shipped' and not self.delivery_date:
+			self.delivery_date = timezone.now() + timedelta(hours=24)
+		super().save(*args, **kwargs)
 
 class OrderItem(models.Model):
 	product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
