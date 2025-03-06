@@ -30,16 +30,34 @@ def get_cart_total(request):
             return 0
     return 0
 
+def get_cart_items(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        cartItems = order.get_cart_items
+    else:
+        cartItems = 0
+    return cartItems
+
+def get_cart_data(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        cartItems = order.get_cart_items
+    else:
+        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
+        cartItems = order['get_cart_items']
+    return cartItems
+
 def store(request):
+    cartItems = get_cart_data(request)
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
     else:
         items = []
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
 
     category_slug = request.GET.get('category')
     categories = Category.objects.all()
@@ -58,31 +76,28 @@ def store(request):
     return render(request, 'store/store.html', context)
 
 def cart(request):
-    cart_total = get_cart_total(request)
+    cartItems = get_cart_data(request)
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
     else:
         items = []
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
 
     context = {'items':items, 'order':order, 'cartItems':cartItems}
     return render(request, 'store/cart.html', context)
 
 @login_required(login_url='login')
 def checkout(request):
+    cartItems = get_cart_data(request)
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
     else:
         items = []
         order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
 
     # Create Razorpay Order
     if request.user.is_authenticated and items:
@@ -263,16 +278,8 @@ def reset_password(request):
     return render(request, 'store/reset_password.html')
 
 def product_view(request, product_id):
+    cartItems = get_cart_data(request)
     product = Product.objects.get(id=product_id)
-    
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        cartItems = order.get_cart_items
-    else:
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
-        
     context = {
         'product': product,
         'cartItems': cartItems
@@ -280,15 +287,9 @@ def product_view(request, product_id):
     return render(request, 'store/product_detail.html', context)
 
 def search_products(request):
+    cartItems = get_cart_data(request)
     query = request.GET.get('q', '')
     category_slug = request.GET.get('category')
-    
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        cartItems = order.get_cart_items
-    else:
-        cartItems = 0
     
     categories = Category.objects.all()
     products = Product.objects.all()
