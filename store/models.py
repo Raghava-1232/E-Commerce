@@ -65,7 +65,7 @@ class Product(models.Model):
 		try:
 			url = self.image.url
 		except:
-			url = ''
+			url = '/static/images/placeholder.png'
 		return url
 
 class Order(models.Model):
